@@ -3,48 +3,49 @@ import java.util.Arrays;
 import java.util.Stack;
 
 public class StokePrice {
+
+    static class MyPair {
+        private int first;
+        private int second;
+
+        public MyPair(int a, int b) {
+            first = a;
+            second = b;
+        }
+
+        public int getFirst() {
+            return first;
+        }
+
+        public int getSecond() {
+            return second;
+        }
+    }
+
+
     public int[] solution(int[] prices) {
         int[] answer = new int[prices.length];
-        Stack<ArrayList<Integer>> stack = new Stack<>();
+        Stack<MyPair> stack = new Stack<>();
+        stack.push(new MyPair(0, 0));
 
         int nowIndex;
         for (nowIndex = 0; nowIndex < prices.length; nowIndex++) {
-            int size = stack.size();
-            if (prices[nowIndex] > size) {
-                for (int i = 0; i < prices[nowIndex] - size - 1; i++) {
-                    stack.push(null);
+            if (prices[nowIndex] < stack.peek().getFirst()) {
+                MyPair poppedPair = stack.pop();
+                while (poppedPair.getFirst() > prices[nowIndex]) {
+                    answer[poppedPair.getSecond()] = nowIndex - poppedPair.getSecond();
+                    poppedPair = stack.pop();
                 }
-                ArrayList<Integer> list = new ArrayList<Integer>();
-                list.add(nowIndex);
-                stack.push(list);
-            } else { // prices[nowIndex] <= size
-                for (int i = 0; i < size - prices[nowIndex]; i++) {
-                    ArrayList<Integer> list = stack.pop();
-                    if (list == null) {
-                        continue;
-                    }
-                    for (int indexFallen : list) {
-                        answer[indexFallen] = nowIndex - indexFallen;
-                    }
-                }
-                if (stack.peek() == null) {
-                    stack.pop();
-                    stack.push(new ArrayList<Integer>());
-                }
-                stack.peek().add(nowIndex);
+                stack.push(poppedPair);
             }
+            stack.push(new MyPair(prices[nowIndex], nowIndex));
         }
 
-        int size = stack.size();
         nowIndex--;
-        for (int i = 0; i < size; i++) {
-            ArrayList<Integer> list = stack.pop();
-            if (list == null) {
-                continue;
-            }
-            for (int indexFallen : list) {
-                answer[indexFallen] = nowIndex - indexFallen;
-            }
+        MyPair poppedPair = stack.pop();
+        while (poppedPair.getFirst() > 0) {
+            answer[poppedPair.getSecond()] = nowIndex - poppedPair.getSecond();
+            poppedPair = stack.pop();
         }
 
         return answer;
