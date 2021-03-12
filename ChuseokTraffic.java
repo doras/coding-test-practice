@@ -28,9 +28,9 @@ public class ChuseokTraffic {
 
         for (String str : lines) {
             LocalTime endTime = LocalTime.parse(str.substring(11, 23));
-            double duratoinDouble = Double.parseDouble(str.substring(24, str.indexOf("s", 24)));
-            long duratoinLong = (Math.round(duratoinDouble * 1000) - 1) * 1000000;
-            LocalTime startTime = endTime.minusNanos(duratoinLong);
+            double durationDouble = Double.parseDouble(str.substring(24, str.indexOf("s", 24)));
+            long durationLong = (Math.round(durationDouble * 1000) - 1) * 1000000;
+            LocalTime startTime = endTime.minusNanos(durationLong);
 
             list.add(new MyPeriod(startTime, endTime));
         }
@@ -40,11 +40,20 @@ public class ChuseokTraffic {
         
         for (int i = 0; i < lines.length; i++) {
             int count = 1;
-            LocalTime startTime = list.get(i).getStartTime().minusNanos(999000000);
+            LocalTime endTime = list.get(i).getStartTime();
+            LocalTime startTime = endTime.minusNanos(999000000);
             for (int j = i - 1; j >= 0; j--) {
-                if (startTime.isBefore(list.get(j).getEndTime())) {
+                if (startTime.compareTo(list.get(j).getEndTime()) <= 0) {
                     count++;
                 }
+            }
+
+            for (int j = i + 1; j < lines.length; j++) {
+                if (endTime.compareTo(list.get(j).getStartTime()) != 0) {
+                    break;
+                }
+
+                count++;
             }
 
             if (answer < count) {
