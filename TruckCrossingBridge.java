@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class TruckCrossingBridge {
     public int solution(int bridge_length, int weight, int[] truck_weights) {
