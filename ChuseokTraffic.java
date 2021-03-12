@@ -1,23 +1,24 @@
-import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class ChuseokTraffic {
 
     static class MyPeriod {
-        LocalTime startTime;
-        LocalTime endTime;
+        LocalDateTime startTime;
+        LocalDateTime endTime;
 
-        public MyPeriod (LocalTime startTime, LocalTime endTime) {
+        public MyPeriod (LocalDateTime startTime, LocalDateTime endTime) {
             this.startTime = startTime;
             this.endTime = endTime;
         }
 
-        public LocalTime getEndTime() {
+        public LocalDateTime getEndTime() {
             return endTime;
         }
 
-        public LocalTime getStartTime() {
+        public LocalDateTime getStartTime() {
             return startTime;
         }
     }
@@ -27,10 +28,15 @@ public class ChuseokTraffic {
         ArrayList<MyPeriod> list = new ArrayList<>();
 
         for (String str : lines) {
-            LocalTime endTime = LocalTime.parse(str.substring(11, 23));
-            double durationDouble = Double.parseDouble(str.substring(24, str.indexOf("s", 24)));
-            long durationLong = (Math.round(durationDouble * 1000) - 1) * 1000000;
-            LocalTime startTime = endTime.minusNanos(durationLong);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+            LocalDateTime endTime = LocalDateTime.parse(str.substring(0, 23), formatter);
+            long durationLong = Integer.parseInt(str.substring(24, 25)) * 1000;
+            if (str.charAt(25) == '.') {
+                int ms = Integer.parseInt(str.substring(26, str.indexOf("s")));
+                durationLong += ms;
+            }
+            durationLong = (durationLong - 1) * 1000000;
+            LocalDateTime startTime = endTime.minusNanos(durationLong);
 
             list.add(new MyPeriod(startTime, endTime));
         }
@@ -40,8 +46,8 @@ public class ChuseokTraffic {
         
         for (int i = 0; i < lines.length; i++) {
             int count = 1;
-            LocalTime endTime = list.get(i).getStartTime();
-            LocalTime startTime = endTime.minusNanos(999000000);
+            LocalDateTime endTime = list.get(i).getStartTime();
+            LocalDateTime startTime = endTime.minusNanos(999000000);
             for (int j = i - 1; j >= 0; j--) {
                 if (startTime.compareTo(list.get(j).getEndTime()) <= 0) {
                     count++;
@@ -65,7 +71,7 @@ public class ChuseokTraffic {
     }
 
     public static void main(String[] args) {
-        // LocalTime time = LocalTime.parse("20:59:57.421");
+        // LocalDateTime time = LocalDateTime.parse("20:59:57.421");
         // System.out.println(time);
         
         ChuseokTraffic obj = new ChuseokTraffic();
